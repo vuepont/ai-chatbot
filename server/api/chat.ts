@@ -1,20 +1,33 @@
 import type { UIMessage } from 'ai'
-import { createDeepSeek } from '@ai-sdk/deepseek'
-import { convertToModelMessages, streamText } from 'ai'
+import { convertToModelMessages, createGateway, streamText } from 'ai'
 import { createError, readBody } from 'h3'
 
 export const maxDuration = 30
 
 const DEFAULT_SYSTEM_PROMPT = 'You are a helpful assistant that can answer questions and help with tasks'
+const DEFAULT_MODEL = 'openai/gpt-4o'
 
 interface ChatRequestBody {
   messages: UIMessage[]
-  model: string
+  model?: string
   webSearch?: boolean
 }
 
-export default defineLazyEventHandler(async () =>
-  defineEventHandler(async (event) => {
+export default defineLazyEventHandler(async () => {
+  const apiKey = useRuntimeConfig().aiGatewayApiKey
+
+  if (!apiKey) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Missing AI Gateway API key',
+    })
+  }
+
+  const gateway = createGateway({
+    apiKey,
+  })
+
+  return defineEventHandler(async (event) => {
     const { messages, model, webSearch = false } = await readBody<ChatRequestBody>(event)
 
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -24,40 +37,10 @@ export default defineLazyEventHandler(async () =>
       })
     }
 
-    if (!model) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Missing model value',
-      })
-    }
-
-    const config = useRuntimeConfig(event)
-
-    // Initialize providers
-    const deepseek = createDeepSeek({
-      apiKey: config.deepseekApiKey,
-    })
-
-    // Select the correct provider and model based on model name
-    let modelInstance
-    if (webSearch) {
-      // Perplexity model (if needed)
-      modelInstance = 'perplexity/sonar'
-    }
-    else if (model.startsWith('deepseek/')) {
-      // DeepSeek model
-      const modelName = model.replace('deepseek/', '')
-      modelInstance = deepseek(modelName)
-    }
-    else {
-      throw createError({
-        statusCode: 400,
-        statusMessage: `Unsupported model: ${model}`,
-      })
-    }
+    const selectedModel = webSearch ? 'perplexity/sonar' : (model || DEFAULT_MODEL)
 
     const result = streamText({
-      model: modelInstance,
+      model: gateway(selectedModel),
       messages: convertToModelMessages(messages),
       system: DEFAULT_SYSTEM_PROMPT,
     })
@@ -66,5 +49,5 @@ export default defineLazyEventHandler(async () =>
       sendSources: true,
       sendReasoning: true,
     })
-  }),
-)
+  })
+})

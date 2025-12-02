@@ -14,7 +14,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    deepseekApiKey: process.env.DEEPSEEK_API_KEY,
+    aiGatewayApiKey: process.env.NUXT_AI_GATEWAY_API_KEY,
   },
 
   modules: ['shadcn-nuxt'],
