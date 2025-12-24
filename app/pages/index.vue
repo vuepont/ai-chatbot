@@ -151,7 +151,7 @@ function handleRegenerate() {
 </script>
 
 <template>
-  <div class="relative mx-auto size-full h-screen max-w-4xl p-6">
+  <div class="relative mx-auto size-full h-full max-w-4xl p-6">
     <div class="flex h-full flex-col">
       <Conversation class="h-full">
         <ConversationContent>

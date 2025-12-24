@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { StreamMarkdown } from 'streamdown-vue'
 import { computed, useSlots } from 'vue'
+import { Markdown } from 'vue-stream-markdown'
 import { CollapsibleContent } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
+import 'vue-stream-markdown/index.css'
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -36,6 +37,6 @@ const md = computed(() => (slotContent.value ?? props.content ?? '') as string)
       props.class,
     )"
   >
-    <StreamMarkdown :content="md" />
+    <Markdown :content="md" />
   </CollapsibleContent>
 </template>

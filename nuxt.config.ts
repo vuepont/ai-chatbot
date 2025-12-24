@@ -17,7 +17,14 @@ export default defineNuxtConfig({
     aiGatewayApiKey: process.env.NUXT_AI_GATEWAY_API_KEY,
   },
 
-  modules: ['shadcn-nuxt'],
+  modules: [
+    'shadcn-nuxt',
+    '@nuxtjs/color-mode',
+  ],
+
+  colorMode: {
+    classSuffix: '',
+  },
 
   shadcn: {
     /**
